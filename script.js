@@ -7,57 +7,52 @@ document.getElementById('submit').addEventListener('click', function() {
         return;
     }
 
-    const board = document.getElementById('board');
-    board.style.display = "grid"; // Show the board
-
-    const messageDiv = document.querySelector('.message');
     let currentPlayer = player1;
     let currentMarker = 'X';
     let gameActive = true;
-    let gameState = ["", "", "", "", "", "", "", "", ""];
+    const boardState = ["", "", "", "", "", "", "", "", ""];
+    const messageDiv = document.querySelector('.message');
+    const cells = document.querySelectorAll('.board div');
 
     messageDiv.textContent = `${currentPlayer}, you're up!`;
 
-    board.addEventListener('click', function(event) {
-        const clickedCell = event.target;
-        const clickedCellIndex = parseInt(clickedCell.id) - 1;
+    cells.forEach(cell => {
+        cell.textContent = "";
+        cell.addEventListener('click', function() {
+            const cellIndex = parseInt(cell.id) - 1;
 
-        if (gameState[clickedCellIndex] !== "" || !gameActive) {
-            return;
-        }
+            if (boardState[cellIndex] !== "" || !gameActive) {
+                return;
+            }
 
-        gameState[clickedCellIndex] = currentMarker;
-        clickedCell.textContent = currentMarker;
+            boardState[cellIndex] = currentMarker;
+            cell.textContent = currentMarker;
 
-        if (checkWinner(gameState)) {
-            gameActive = false;
-            messageDiv.textContent = `${currentPlayer}, congratulations you won!`;
-            return;
-        }
-
-        if (!gameState.includes("")) {
-            gameActive = false;
-            messageDiv.textContent = "It's a tie!";
-            return;
-        }
-
-        currentPlayer = currentPlayer === player1 ? player2 : player1;
-        currentMarker = currentMarker === 'X' ? 'O' : 'X';
-        messageDiv.textContent = `${currentPlayer}, you're up!`;
+            if (checkWinner(boardState, currentMarker)) {
+                messageDiv.textContent = `${currentPlayer}, congratulations you won!`;
+                gameActive = false;
+            } else if (!boardState.includes("")) {
+                messageDiv.textContent = "It's a tie!";
+                gameActive = false;
+            } else {
+                currentPlayer = currentPlayer === player1 ? player2 : player1;
+                currentMarker = currentMarker === 'X' ? 'O' : 'X';
+                messageDiv.textContent = `${currentPlayer}, you're up!`;
+            }
+        }, { once: true });
     });
 });
 
-function checkWinner(gameState) {
-    const winningCombinations = [
+function checkWinner(boardState, currentMarker) {
+    const winningCombos = [
         [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
         [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
         [0, 4, 8], [2, 4, 6]             // diagonals
     ];
 
-    return winningCombinations.some(combination => {
-        const [a, b, c] = combination;
-        return gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c];
-    });
+    return winningCombos.some(combo => 
+        combo.every(index => boardState[index] === currentMarker)
+    );
 }
 
 
